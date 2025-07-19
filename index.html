@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socaio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: white;
+            color: #1f2937;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #f8fafc;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #6366f1;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .logo:hover {
+            color: #5855eb;
+        }
+
+        .history-item {
+            padding: 12px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .history-item:hover {
+            background: #d1d5db;
+            border-color: #6366f1;
+        }
+
+        .history-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .history-preview {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .main-content.split {
+            flex: 0.6;
+        }
+
+        /* Initial Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .welcome-screen.hidden {
+            display: none;
+        }
+
+        .greeting {
+            font-size: 48px;
+            font-weight: 300;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .query-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .query-input {
+            width: 100%;
+            padding: 20px 60px 20px 20px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            color: #1f2937;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .query-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .submit-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #6366f1;
+            border: none;
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background: #5855eb;
+        }
+
+        .submit-btn:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+        }
+
+        /* Chat Interface */
+        .chat-interface {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .chat-interface.active {
+            display: flex;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .message {
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 16px 20px;
+            border-radius: 16px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: transparent;
+            border: none;
+            border-bottom-left-radius: 4px;
+            padding: 16px 0;
+        }
+
+        /* Characteristics Panel */
+        .characteristics-panel {
+            width: 0;
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            padding: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .characteristics-panel.active {
+            width: 400px;
+            padding: 20px;
+        }
+
+        .panel-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .characteristics-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .characteristic-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .characteristic-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .characteristic-item:hover {
+            background: #f3f4f6;
+            border-color: #6366f1;
+        }
+
+        .characteristic-item.selected {
+            background: #6366f1;
+            border-color: #6366f1;
+            color: white;
+        }
+
+        .characteristic-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #9ca3af;
+            border-radius: 3px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .characteristic-item.selected .characteristic-checkbox {
+            background: white;
+            border-color: white;
+        }
+
+        .characteristic-checkbox::after {
+            content: '✓';
+            color: #6366f1;
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .characteristic-item.selected .characteristic-checkbox::after {
+            opacity: 1;
+        }
+
+        .characteristic-label {
+            font-size: 13px;
+            flex: 1;
+        }
+
+        .generate-btn {
+            background: #10b981;
+            border: none;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .generate-btn:hover {
+            background: #059669;
+        }
+
+        .generate-btn:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #1a1a2e;
+            border: 1px solid #2a2a4a;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #4b5563;
+            border-radius: 50%;
+            border-top-color: #6366f1;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                z-index: 20;
+                height: 100%;
+            }
+            
+            .characteristics-panel.active {
+                width: 100%;
+                position: absolute;
+                z-index: 15;
+                height: 100%;
+            }
+            
+            .main-content.split {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="logo" id="logo">Socaio</div>
+            <div class="history-section">
+                <div class="history-item">
+                    <div class="history-title">Product Launch Reaction</div>
+                    <div class="history-preview">iPhone 15 announcement analysis</div>
+                </div>
+                <div class="history-item">
+                    <div class="history-title">News Article Impact</div>
+                    <div class="history-preview">Climate policy coverage</div>
+                </div>
+                <div class="history-item">
+                    <div class="history-title">Brand Campaign Analysis</div>
+                    <div class="history-preview">Nike sustainability initiative</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <button class="toggle-sidebar" id="toggleSidebar">☰</button>
+            
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="greeting">How can I help you understand your audience today?</div>
+                <div class="query-container">
+                    <input type="text" class="query-input" id="queryInput" placeholder="Enter your test message here...">
+                    <button class="submit-btn" id="submitBtn">
+                        <span id="submitIcon">→</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-interface" id="chatInterface">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="characteristics-panel" id="characteristicsPanel">
+            <div class="panel-header">Audience Characteristics</div>
+            
+            <div class="characteristics-section">
+                <div class="section-title">Age Groups</div>
+                <div class="characteristic-grid">
+                    <div class="characteristic-item" data-value="18-24">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">18-24</div>
+                    </div>
+                    <div class="characteristic-item" data-value="25-34">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">25-34</div>
+                    </div>
+                    <div class="characteristic-item" data-value="35-44">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">35-44</div>
+                    </div>
+                    <div class="characteristic-item" data-value="45-54">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">45-54</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="characteristics-section">
+                <div class="section-title">Gender</div>
+                <div class="characteristic-grid">
+                    <div class="characteristic-item" data-value="male">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Male</div>
+                    </div>
+                    <div class="characteristic-item" data-value="female">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Female</div>
+                    </div>
+                    <div class="characteristic-item" data-value="non-binary">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Non-binary</div>
+                    </div>
+                    <div class="characteristic-item" data-value="prefer-not-to-say">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Prefer not to say</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="characteristics-section">
+                <div class="section-title">Personality Traits</div>
+                <div class="characteristic-grid">
+                    <div class="characteristic-item" data-value="curious">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Curious</div>
+                    </div>
+                    <div class="characteristic-item" data-value="ambitious">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Ambitious</div>
+                    </div>
+                    <div class="characteristic-item" data-value="conservative">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Conservative</div>
+                    </div>
+                    <div class="characteristic-item" data-value="progressive">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Progressive</div>
+                    </div>
+                    <div class="characteristic-item" data-value="analytical">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Analytical</div>
+                    </div>
+                    <div class="characteristic-item" data-value="creative">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Creative</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="characteristics-section">
+                <div class="section-title">Interests</div>
+                <div class="characteristic-grid">
+                    <div class="characteristic-item" data-value="technology">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Technology</div>
+                    </div>
+                    <div class="characteristic-item" data-value="sports">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Sports</div>
+                    </div>
+                    <div class="characteristic-item" data-value="arts">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Arts</div>
+                    </div>
+                    <div class="characteristic-item" data-value="business">
+                        <div class="characteristic-checkbox"></div>
+                        <div class="characteristic-label">Business</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="generate-btn" id="generateBtn">Generate Analysis Report</button>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentQuery = '';
+        let selectedCharacteristics = new Set();
+
+        // DOM elements
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const chatInterface = document.getElementById('chatInterface');
+        const characteristicsPanel = document.getElementById('characteristicsPanel');
+        const queryInput = document.getElementById('queryInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitIcon = document.getElementById('submitIcon');
+        const chatMessages = document.getElementById('chatMessages');
+        const generateBtn = document.getElementById('generateBtn');
+        const toggleSidebar = document.getElementById('toggleSidebar');
+        const logo = document.getElementById('logo');
+
+        // Initialize app
+        function init() {
+            setupEventListeners();
+            queryInput.focus();
+        }
+
+        function setupEventListeners() {
+            // Submit query
+            submitBtn.addEventListener('click', handleQuerySubmit);
+            queryInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleQuerySubmit();
+            });
+
+            // Characteristic selection
+            document.querySelectorAll('.characteristic-item').forEach(item => {
+                item.addEventListener('click', () => toggleCharacteristic(item));
+            });
+
+            // Generate report
+            generateBtn.addEventListener('click', generateReport);
+
+            // Sidebar toggle
+            toggleSidebar.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+
+            // Logo click to go back to main page
+            logo.addEventListener('click', goBackToMainPage);
+
+            // History items
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', () => loadHistoryItem(item));
+            });
+        }
+
+        function handleQuerySubmit() {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            currentQuery = query;
+            
+            // Show loading state
+            submitIcon.innerHTML = '<div class="loading"></div>';
+            submitBtn.disabled = true;
+
+            // Switch to chat interface
+            setTimeout(() => {
+                welcomeScreen.classList.add('hidden');
+                chatInterface.classList.add('active');
+                mainContent.classList.add('split');
+                characteristicsPanel.classList.add('active');
+                
+                addMessage('user', query);
+                
+                // Simulate AI thinking
+                setTimeout(() => {
+                    addMessage('assistant', "I've analyzed your query and generated relevant audience characteristics. Please select the specific traits you'd like me to focus on in the analysis, then click 'Generate Analysis Report' for detailed insights.");
+                    
+                    // Reset submit button
+                    submitIcon.innerHTML = '→';
+                    submitBtn.disabled = false;
+                }, 1000);
+            }, 500);
+        }
+
+        function addMessage(sender, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function toggleCharacteristic(item) {
+            const value = item.dataset.value;
+            
+            if (selectedCharacteristics.has(value)) {
+                selectedCharacteristics.delete(value);
+                item.classList.remove('selected');
+            } else {
+                selectedCharacteristics.add(value);
+                item.classList.add('selected');
+            }
+            
+            updateGenerateButton();
+        }
+
+        function updateGenerateButton() {
+            generateBtn.disabled = selectedCharacteristics.size === 0;
+            generateBtn.textContent = selectedCharacteristics.size > 0 
+                ? `Generate Analysis Report (${selectedCharacteristics.size} traits selected)`
+                : 'Generate Analysis Report';
+        }
+
+        function generateReport() {
+            if (selectedCharacteristics.size === 0) return;
+
+            generateBtn.innerHTML = '<div class="loading"></div> Generating Report...';
+            generateBtn.disabled = true;
+
+            const traits = Array.from(selectedCharacteristics).join(', ');
+            
+            setTimeout(() => {
+                const reportMessage = `📊 **Analysis Report Generated**
+
+**Query:** ${currentQuery}
+
+**Selected Audience Traits:** ${traits}
+
+**Key Insights:**
+• This content would likely resonate well with the selected demographic
+• Emotional response patterns suggest high engagement potential
+• Recommended messaging adjustments for optimal impact
+• Cultural sensitivity considerations have been analyzed
+
+*Note: This is a demo interface. In the full implementation, your LLM backend would generate detailed, personalized audience analysis reports based on the selected characteristics.*`;
+
+                addMessage('assistant', reportMessage);
+                
+                // Reset generate button
+                generateBtn.innerHTML = 'Generate New Analysis';
+                generateBtn.disabled = false;
+            }, 2000);
+        }
+
+        function loadHistoryItem(item) {
+            const title = item.querySelector('.history-title').textContent;
+            const preview = item.querySelector('.history-preview').textContent;
+            
+            currentQuery = `${title}: ${preview}`;
+            
+            welcomeScreen.classList.add('hidden');
+            chatInterface.classList.add('active');
+            mainContent.classList.add('split');
+            characteristicsPanel.classList.add('active');
+            
+            chatMessages.innerHTML = '';
+            addMessage('user', currentQuery);
+            addMessage('assistant', "I've loaded your previous analysis. You can modify the audience characteristics and generate a new report, or view the original analysis results.");
+        }
+
+        function goBackToMainPage() {
+            // Reset to initial state
+            welcomeScreen.classList.remove('hidden');
+            chatInterface.classList.remove('active');
+            mainContent.classList.remove('split');
+            characteristicsPanel.classList.remove('active');
+            
+            // Clear chat messages
+            chatMessages.innerHTML = '';
+            
+            // Reset form
+            queryInput.value = '';
+            currentQuery = '';
+            selectedCharacteristics.clear();
+            
+            // Reset all checkboxes
+            document.querySelectorAll('.characteristic-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Reset generate button
+            updateGenerateButton();
+            
+            // Focus on input
+            queryInput.focus();
+        }
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
