@@ -578,23 +578,9 @@ FEATURES:
     </div>
 
     <script>
-        // Configuration - Update this with your OpenAI API key
-        let OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") || ''; 
+        // Configuration - Environment variable injection
+        const OPENAI_API_KEY = '{{OPENAI_API_KEY}}'; // Will be replaced at build time
         const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-        
-        // API Key management
-        function checkApiKey() {
-            if (!OPENAI_API_KEY) {
-                const key = prompt('Please enter your OpenAI API key to enable AI analysis:');
-                if (key) {
-                    OPENAI_API_KEY = key;
-                    localStorage.setItem('socaio-api-key', key);
-                    return true;
-                }
-                return false;
-            }
-            return true;
-        }
 
         // State management
         let currentQuery = '';
@@ -670,14 +656,13 @@ FEATURES:
             addMessage('assistant', "Analyzing your news content and generating audience characteristics...");
 
             try {
-                // Check API key before analysis
-                if (!checkApiKey()) {
-                    throw new Error('API key not provided');
-                }
+                console.log('Starting AI analysis for:', query);
                 
                 // Analyze the news with AI
                 const characteristics = await analyzeNewsWithAI(query);
                 generatedCharacteristics = characteristics;
+
+                console.log('AI analysis completed:', characteristics);
 
                 // Update the characteristics panel with AI-generated content
                 updateCharacteristicsPanel(characteristics);
@@ -687,7 +672,9 @@ FEATURES:
 
             } catch (error) {
                 console.error('Error during analysis:', error);
-                updateLastAssistantMessage("I've generated some general audience characteristics for your analysis. Please select the traits you'd like to focus on and click 'Generate Analysis Report'.");
+                console.log('Using fallback characteristics due to error');
+                
+                updateLastAssistantMessage("I've generated some general audience characteristics for your analysis. AI analysis is currently unavailable - using fallback mode. Please select the traits you'd like to focus on and click 'Generate Analysis Report'.");
                 
                 // Use fallback characteristics
                 const fallbackChars = getFallbackCharacteristics();
@@ -975,6 +962,14 @@ ${analysisReport}`;
 
         // OpenAI API integration
         async function analyzeNewsWithAI(newsContent) {
+            console.log('Calling OpenAI API with content:', newsContent.substring(0, 100) + '...');
+            
+            // Check if API key is properly injected
+            if (!OPENAI_API_KEY || OPENAI_API_KEY === '{{OPENAI_API_KEY}}') {
+                console.error('API key not properly injected at build time');
+                throw new Error('API key not configured');
+            }
+            
             try {
                 const response = await fetch(OPENAI_API_URL, {
                     method: 'POST',
@@ -983,7 +978,7 @@ ${analysisReport}`;
                         'Authorization': `Bearer ${OPENAI_API_KEY}`
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4',
+                        model: 'gpt-3.5-turbo',
                         messages: [{
                             role: 'user',
                             content: `Analyze this news content and identify the key audience characteristics that would be most relevant for understanding public reaction. Provide your analysis in the following JSON format:
@@ -992,13 +987,10 @@ ${analysisReport}`;
   "primary_demographics": {
     "age_groups": ["25-34", "35-44"],
     "gender": ["male", "female"],
-    "education": ["college", "graduate"],
-    "income": ["middle-class", "upper-middle-class"]
+    "education": ["college", "graduate"]
   },
-  "interests": ["technology", "business", "politics"],
+  "interests": ["technology", "business"],
   "personality_traits": ["analytical", "progressive", "curious"],
-  "geographic": ["urban", "suburban"],
-  "professional": ["tech-workers", "professionals", "managers"],
   "additional_options": {
     "age_groups": ["18-24", "45-54", "55+"],
     "personality_traits": ["conservative", "traditional", "skeptical"],
@@ -1008,27 +1000,35 @@ ${analysisReport}`;
 
 News content to analyze: "${newsContent}"`
                         }],
-                        max_tokens: 1500,
+                        max_tokens: 800,
                         temperature: 0.7
                     })
                 });
 
+                console.log('OpenAI API response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error('Failed to get AI analysis');
+                    const errorText = await response.text();
+                    console.error('OpenAI API error:', errorText);
+                    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('OpenAI API response data:', data);
+                
                 const analysisText = data.choices[0].message.content;
+                console.log('Analysis text received:', analysisText);
                 
                 try {
                     return JSON.parse(analysisText);
                 } catch (parseError) {
+                    console.log('JSON parsing failed, using fallback extraction');
                     // If JSON parsing fails, extract characteristics manually
                     return extractCharacteristicsFromText(analysisText);
                 }
             } catch (error) {
                 console.error('Error analyzing news:', error);
-                return getFallbackCharacteristics();
+                throw error; // Re-throw so the calling function can handle it
             }
         }
 
@@ -1041,7 +1041,7 @@ News content to analyze: "${newsContent}"`
                         'Authorization': `Bearer ${OPENAI_API_KEY}`
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4',
+                        model: 'gpt-3.5-turbo',
                         messages: [{
                             role: 'user',
                             content: `Provide a detailed analysis of how an audience with these characteristics would likely react to this news:
