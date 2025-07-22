@@ -40,61 +40,6 @@ FEATURES:
             transition: all 0.3s ease;
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: #f8fafc;
-            border-right: 1px solid #e5e7eb;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            width: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            color: #6366f1;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        .logo:hover {
-            color: #5855eb;
-        }
-
-        .history-item {
-            padding: 12px;
-            background: #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-
-        .history-item:hover {
-            background: #d1d5db;
-            border-color: #6366f1;
-        }
-
-        .history-title {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .history-preview {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
-        }
 
         /* Main Content */
         .main-content {
@@ -105,7 +50,7 @@ FEATURES:
         }
 
         .main-content.split {
-            flex: 0.6;
+            flex: 1;
         }
 
         /* Initial Welcome Screen */
@@ -383,22 +328,101 @@ FEATURES:
             cursor: not-allowed;
         }
 
-        .toggle-sidebar {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: #1a1a2e;
-            border: 1px solid #2a2a4a;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
+        /* Report Display Styles */
+        .report-display {
+            height: 100%;
+            overflow-y: auto;
         }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .report-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .back-to-characteristics {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .back-to-characteristics:hover {
+            background: #4b5563;
+        }
+
+        .report-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .report-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 20px 0 10px 0;
+            border-left: 4px solid #6366f1;
+            padding-left: 12px;
+        }
+
+        .report-content h4:first-child {
+            margin-top: 0;
+        }
+
+        .report-content p {
+            margin-bottom: 12px;
+        }
+
+        .report-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .report-content li {
+            margin-bottom: 6px;
+        }
+
+        .report-content strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .report-meta {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .report-meta .meta-item {
+            margin-bottom: 8px;
+        }
+
+        .report-meta .meta-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .report-meta strong {
+            color: #6b7280;
+        }
+
 
         .loading {
             display: inline-block;
@@ -415,12 +439,6 @@ FEATURES:
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                position: absolute;
-                z-index: 20;
-                height: 100%;
-            }
-            
             .characteristics-panel.active {
                 width: 100%;
                 position: absolute;
@@ -436,28 +454,10 @@ FEATURES:
 </head>
 <body>
     <div class="container">
-        <div class="sidebar" id="sidebar">
-            <div class="logo" id="logo">Socaio</div>
-            <div class="history-section">
-                <div class="history-item">
-                    <div class="history-title">Product Launch Reaction</div>
-                    <div class="history-preview">iPhone 15 announcement analysis</div>
-                </div>
-                <div class="history-item">
-                    <div class="history-title">News Article Impact</div>
-                    <div class="history-preview">Climate policy coverage</div>
-                </div>
-                <div class="history-item">
-                    <div class="history-title">Brand Campaign Analysis</div>
-                    <div class="history-preview">Nike sustainability initiative</div>
-                </div>
-            </div>
-        </div>
 
-        <div class="main-content" id="mainContent">
-            <button class="toggle-sidebar" id="toggleSidebar">☰</button>
-            
+        <div class="main-content" id="mainContent">            
             <div class="welcome-screen" id="welcomeScreen">
+                <div class="logo" style="font-size: 32px; font-weight: bold; color: #6366f1; margin-bottom: 20px;">Socaio</div>
                 <div class="greeting">How can I help you understand your audience today?</div>
                 <div class="query-container">
                     <input type="text" class="query-input" id="queryInput" placeholder="Enter your test message here...">
@@ -477,6 +477,19 @@ FEATURES:
         <div class="characteristics-panel" id="characteristicsPanel">
             <div class="panel-header">Audience Characteristics</div>
             
+            <!-- Report Display Area -->
+            <div class="report-display" id="reportDisplay" style="display: none;">
+                <div class="report-header">
+                    <h3>📊 Analysis Report</h3>
+                    <button class="back-to-characteristics" id="backToCharacteristics">← Back to Characteristics</button>
+                </div>
+                <div class="report-content" id="reportContent">
+                    <!-- Report content will be displayed here -->
+                </div>
+            </div>
+            
+            <!-- Characteristics Selection Area -->
+            <div class="characteristics-content" id="characteristicsContent">
             <div class="characteristics-section">
                 <div class="section-title">Age Groups</div>
                 <div class="characteristic-grid">
@@ -574,6 +587,7 @@ FEATURES:
             </div>
 
             <button class="generate-btn" id="generateBtn">Generate Analysis Report</button>
+            </div>
         </div>
     </div>
 
@@ -588,7 +602,6 @@ FEATURES:
         let generatedCharacteristics = {};
 
         // DOM elements
-        const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const welcomeScreen = document.getElementById('welcomeScreen');
         const chatInterface = document.getElementById('chatInterface');
@@ -597,9 +610,11 @@ FEATURES:
         const submitBtn = document.getElementById('submitBtn');
         const submitIcon = document.getElementById('submitIcon');
         const chatMessages = document.getElementById('chatMessages');
-        const generateBtn = document.getElementById('generateBtn');
-        const toggleSidebar = document.getElementById('toggleSidebar');
-        const logo = document.getElementById('logo');
+        let generateBtn = document.getElementById('generateBtn');
+        let reportDisplay = document.getElementById('reportDisplay');
+        let reportContent = document.getElementById('reportContent');
+        let characteristicsContent = document.getElementById('characteristicsContent');
+        let backToCharacteristics = document.getElementById('backToCharacteristics');
 
         // Initialize app
         function init() {
@@ -622,17 +637,9 @@ FEATURES:
             // Generate report
             generateBtn.addEventListener('click', generateReport);
 
-            // Sidebar toggle
-            toggleSidebar.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-            });
-
-            // Logo click to go back to main page
-            logo.addEventListener('click', goBackToMainPage);
-
-            // History items
-            document.querySelectorAll('.history-item').forEach(item => {
-                item.addEventListener('click', () => loadHistoryItem(item));
+            // Back to characteristics button
+            backToCharacteristics.addEventListener('click', () => {
+                showCharacteristics();
             });
         }
 
@@ -722,45 +729,52 @@ FEATURES:
         }
 
         async function generateReport() {
-            if (selectedCharacteristics.size === 0) return;
+            console.log('generateReport called');
+            console.log('selectedCharacteristics:', selectedCharacteristics);
+            console.log('currentQuery:', currentQuery);
+            
+            if (selectedCharacteristics.size === 0) {
+                console.log('No characteristics selected, returning');
+                return;
+            }
 
+            console.log('Setting loading state...');
             generateBtn.innerHTML = '<div class="loading"></div> Generating Report...';
             generateBtn.disabled = true;
 
             const traits = Array.from(selectedCharacteristics);
             
             try {
+                console.log('Calling generateReactionAnalysis with:', { currentQuery, traits });
                 // Generate AI-powered reaction analysis
                 const analysisReport = await generateReactionAnalysis(currentQuery, traits);
+                console.log('Got analysis report:', analysisReport);
                 
-                const reportMessage = `📊 **AI-Generated Analysis Report**
-
-**News Content:** ${currentQuery}
-
-**Selected Audience Traits:** ${traits.join(', ')}
-
-**Analysis:**
-${analysisReport}`;
-
-                addMessage('assistant', reportMessage);
+                // Display report in right panel
+                console.log('Displaying report...');
+                displayReport(currentQuery, traits, analysisReport);
                 
             } catch (error) {
                 console.error('Error generating report:', error);
-                const fallbackMessage = `📊 **Analysis Report**
-
-**News Content:** ${currentQuery}
-
-**Selected Audience Traits:** ${traits.join(', ')}
-
-**Key Insights:**
-• This content would likely resonate with the selected demographic based on their characteristics
-• Audience engagement patterns suggest varying levels of interest and emotional response
-• Recommended approach: Tailor messaging to address specific concerns of this demographic
-• Consider cultural and generational factors when crafting communication strategy
-
-*Note: Full AI analysis temporarily unavailable. Please check your API configuration.*`;
-
-                addMessage('assistant', fallbackMessage);
+                const fallbackReport = `
+                <h4>Overall Analysis</h4>
+                <p>This content would likely resonate with the selected demographic based on their characteristics.</p>
+                
+                <h4>Engagement Patterns</h4>
+                <p>Audience engagement patterns suggest varying levels of interest and emotional response based on the selected traits.</p>
+                
+                <h4>Recommendations</h4>
+                <ul>
+                    <li>Tailor messaging to address specific concerns of this demographic</li>
+                    <li>Consider cultural and generational factors when crafting communication strategy</li>
+                    <li>Monitor engagement metrics to validate assumptions</li>
+                    <li>Test different messaging approaches with this audience segment</li>
+                </ul>
+                
+                <p><em>Note: Full AI analysis temporarily unavailable. Using general recommendations.</em></p>
+                `;
+                
+                displayReport(currentQuery, traits, fallbackReport);
             }
 
             // Reset generate button
@@ -768,28 +782,119 @@ ${analysisReport}`;
             generateBtn.disabled = false;
         }
 
-        function loadHistoryItem(item) {
-            const title = item.querySelector('.history-title').textContent;
-            const preview = item.querySelector('.history-preview').textContent;
+        function displayReport(query, traits, analysisContent) {
+            console.log('displayReport called with:', { query, traits, analysisContent });
+            console.log('reportContent element:', reportContent);
             
-            currentQuery = `${title}: ${preview}`;
-            
-            welcomeScreen.classList.add('hidden');
-            chatInterface.classList.add('active');
-            mainContent.classList.add('split');
-            characteristicsPanel.classList.add('active');
-            
-            chatMessages.innerHTML = '';
-            addMessage('user', currentQuery);
-            addMessage('assistant', "I've loaded your previous analysis. You can modify the audience characteristics and generate a new report, or view the original analysis results.");
+            // Create report HTML
+            const reportHTML = `
+                <div class="report-meta">
+                    <div class="meta-item">
+                        <strong>News Content:</strong> ${query.length > 100 ? query.substring(0, 100) + '...' : query}
+                    </div>
+                    <div class="meta-item">
+                        <strong>Selected Traits:</strong> ${traits.join(', ')}
+                    </div>
+                    <div class="meta-item">
+                        <strong>Generated:</strong> ${new Date().toLocaleString()}
+                    </div>
+                </div>
+                
+                ${formatAnalysisContent(analysisContent)}
+            `;
+
+            // Display in right panel
+            console.log('Setting reportContent.innerHTML...');
+            reportContent.innerHTML = reportHTML;
+            console.log('Calling showReport...');
+            showReport();
         }
+
+        function formatAnalysisContent(content) {
+            // If content is already HTML (fallback case), return as is
+            if (content.includes('<h4>') || content.includes('<ul>')) {
+                return content;
+            }
+            
+            // Format plain text analysis into HTML
+            const lines = content.split('\n');
+            let formattedHTML = '';
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // Headers (lines ending with :)
+                if (line.endsWith(':') && !line.includes('•') && !line.includes('-')) {
+                    formattedHTML += `<h4>${line.replace(':', '')}</h4>`;
+                }
+                // List items (starting with • or -)
+                else if (line.startsWith('•') || line.startsWith('-')) {
+                    if (!formattedHTML.includes('<ul>') || formattedHTML.lastIndexOf('</ul>') > formattedHTML.lastIndexOf('<ul>')) {
+                        formattedHTML += '<ul>';
+                    }
+                    formattedHTML += `<li>${line.replace(/^[•-]\s*/, '')}</li>`;
+                }
+                // Regular paragraphs
+                else {
+                    // Close any open lists
+                    if (formattedHTML.includes('<ul>') && formattedHTML.lastIndexOf('<ul>') > formattedHTML.lastIndexOf('</ul>')) {
+                        formattedHTML += '</ul>';
+                    }
+                    formattedHTML += `<p>${line}</p>`;
+                }
+            }
+            
+            // Close any remaining open lists
+            if (formattedHTML.includes('<ul>') && formattedHTML.lastIndexOf('<ul>') > formattedHTML.lastIndexOf('</ul>')) {
+                formattedHTML += '</ul>';
+            }
+            
+            return formattedHTML || '<p>Analysis completed successfully.</p>';
+        }
+
+        function showReport() {
+            console.log('showReport called');
+            console.log('characteristicsContent:', characteristicsContent);
+            console.log('reportDisplay:', reportDisplay);
+            
+            if (characteristicsContent) {
+                characteristicsContent.style.display = 'none';
+                console.log('Hidden characteristicsContent');
+            }
+            if (reportDisplay) {
+                reportDisplay.style.display = 'block';
+                console.log('Showed reportDisplay');
+            }
+        }
+
+        function showCharacteristics() {
+            reportDisplay.style.display = 'none';
+            characteristicsContent.style.display = 'block';
+        }
+
 
         function updateCharacteristicsPanel(characteristics) {
             const panelContent = document.querySelector('#characteristicsPanel');
             const newHTML = `
                 <div class="panel-header">AI-Generated Audience Characteristics</div>
+                
+                <!-- Report Display Area -->
+                <div class="report-display" id="reportDisplay" style="display: none;">
+                    <div class="report-header">
+                        <h3>📊 Analysis Report</h3>
+                        <button class="back-to-characteristics" id="backToCharacteristics">← Back to Characteristics</button>
+                    </div>
+                    <div class="report-content" id="reportContent">
+                        <!-- Report content will be displayed here -->
+                    </div>
+                </div>
+                
+                <!-- Characteristics Selection Area -->
+                <div class="characteristics-content" id="characteristicsContent">
                 ${generateCharacteristicsHTML(characteristics)}
                 <button class="generate-btn" id="generateBtn">Generate Analysis Report</button>
+                </div>
             `;
             
             panelContent.innerHTML = newHTML;
@@ -819,6 +924,26 @@ ${analysisReport}`;
             if (newGenerateBtn) {
                 newGenerateBtn.addEventListener('click', generateReport);
             }
+            
+            // Re-setup back button listener
+            const newBackBtn = document.getElementById('backToCharacteristics');
+            if (newBackBtn) {
+                newBackBtn.addEventListener('click', () => {
+                    showCharacteristics();
+                });
+            }
+            
+            // Update DOM element references
+            const newReportDisplay = document.getElementById('reportDisplay');
+            const newReportContent = document.getElementById('reportContent');
+            const newCharacteristicsContent = document.getElementById('characteristicsContent');
+            const newBackToCharacteristics = document.getElementById('backToCharacteristics');
+            
+            if (newReportDisplay) reportDisplay = newReportDisplay;
+            if (newReportContent) reportContent = newReportContent;
+            if (newCharacteristicsContent) characteristicsContent = newCharacteristicsContent;
+            if (newBackToCharacteristics) backToCharacteristics = newBackToCharacteristics;
+            if (newGenerateBtn) generateBtn = newGenerateBtn;
         }
 
         function updateLastAssistantMessage(newContent) {
@@ -849,6 +974,9 @@ ${analysisReport}`;
             // Reset characteristics panel to original state
             resetCharacteristicsPanel();
             
+            // Show characteristics (not report)
+            showCharacteristics();
+            
             // Focus on input
             queryInput.focus();
         }
@@ -857,6 +985,19 @@ ${analysisReport}`;
             const originalHTML = `
                 <div class="panel-header">Audience Characteristics</div>
                 
+                <!-- Report Display Area -->
+                <div class="report-display" id="reportDisplay" style="display: none;">
+                    <div class="report-header">
+                        <h3>📊 Analysis Report</h3>
+                        <button class="back-to-characteristics" id="backToCharacteristics">← Back to Characteristics</button>
+                    </div>
+                    <div class="report-content" id="reportContent">
+                        <!-- Report content will be displayed here -->
+                    </div>
+                </div>
+                
+                <!-- Characteristics Selection Area -->
+                <div class="characteristics-content" id="characteristicsContent">
                 <div class="characteristics-section">
                     <div class="section-title">Age Groups</div>
                     <div class="characteristic-grid">
@@ -954,6 +1095,7 @@ ${analysisReport}`;
                 </div>
 
                 <button class="generate-btn" id="generateBtn">Generate Analysis Report</button>
+                </div>
             `;
             
             characteristicsPanel.innerHTML = originalHTML;
