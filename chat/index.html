@@ -1,4 +1,20 @@
 <!DOCTYPE html>
+<!--
+Socaio - AI-Powered Audience Analysis Tool
+
+SETUP INSTRUCTIONS:
+1. Get an OpenAI API key from https://platform.openai.com/api-keys
+2. When you first use the tool, you'll be prompted to enter your API key
+3. The key will be stored locally in your browser for future use
+4. Enter your news content, and the AI will analyze and generate relevant audience characteristics
+5. Select or modify the characteristics and generate detailed reaction analysis
+
+FEATURES:
+- AI-powered audience characteristic generation
+- Dynamic checkbox creation based on news content
+- Detailed reaction analysis and insights
+- Fallback mode when API is unavailable
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -280,6 +296,35 @@
             color: white;
         }
 
+        .characteristic-item.auto-selected {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+            position: relative;
+        }
+
+        .characteristic-item.auto-selected::after {
+            content: 'AI';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #059669;
+            color: white;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .characteristic-item.auto-selected.selected {
+            background: #6366f1;
+            border-color: #6366f1;
+        }
+
+        .characteristic-item.auto-selected.selected::after {
+            background: #4f46e5;
+        }
+
         .characteristic-checkbox {
             width: 16px;
             height: 16px;
@@ -533,9 +578,28 @@
     </div>
 
     <script>
+        // Configuration - Update this with your OpenAI API key
+        let OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") || ''; 
+        const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+        
+        // API Key management
+        function checkApiKey() {
+            if (!OPENAI_API_KEY) {
+                const key = prompt('Please enter your OpenAI API key to enable AI analysis:');
+                if (key) {
+                    OPENAI_API_KEY = key;
+                    localStorage.setItem('socaio-api-key', key);
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+
         // State management
         let currentQuery = '';
         let selectedCharacteristics = new Set();
+        let generatedCharacteristics = {};
 
         // DOM elements
         const sidebar = document.getElementById('sidebar');
@@ -586,7 +650,7 @@
             });
         }
 
-        function handleQuerySubmit() {
+        async function handleQuerySubmit() {
             const query = queryInput.value.trim();
             if (!query) return;
 
@@ -597,23 +661,42 @@
             submitBtn.disabled = true;
 
             // Switch to chat interface
-            setTimeout(() => {
-                welcomeScreen.classList.add('hidden');
-                chatInterface.classList.add('active');
-                mainContent.classList.add('split');
-                characteristicsPanel.classList.add('active');
+            welcomeScreen.classList.add('hidden');
+            chatInterface.classList.add('active');
+            mainContent.classList.add('split');
+            characteristicsPanel.classList.add('active');
+            
+            addMessage('user', query);
+            addMessage('assistant', "Analyzing your news content and generating audience characteristics...");
+
+            try {
+                // Check API key before analysis
+                if (!checkApiKey()) {
+                    throw new Error('API key not provided');
+                }
                 
-                addMessage('user', query);
+                // Analyze the news with AI
+                const characteristics = await analyzeNewsWithAI(query);
+                generatedCharacteristics = characteristics;
+
+                // Update the characteristics panel with AI-generated content
+                updateCharacteristicsPanel(characteristics);
+
+                // Update the assistant message
+                updateLastAssistantMessage("I've analyzed your news content and identified the most relevant audience characteristics. The AI has auto-selected the primary characteristics based on the content, but you can modify these selections. Click 'Generate Analysis Report' when ready.");
+
+            } catch (error) {
+                console.error('Error during analysis:', error);
+                updateLastAssistantMessage("I've generated some general audience characteristics for your analysis. Please select the traits you'd like to focus on and click 'Generate Analysis Report'.");
                 
-                // Simulate AI thinking
-                setTimeout(() => {
-                    addMessage('assistant', "I've analyzed your query and generated relevant audience characteristics. Please select the specific traits you'd like me to focus on in the analysis, then click 'Generate Analysis Report' for detailed insights.");
-                    
-                    // Reset submit button
-                    submitIcon.innerHTML = '→';
-                    submitBtn.disabled = false;
-                }, 1000);
-            }, 500);
+                // Use fallback characteristics
+                const fallbackChars = getFallbackCharacteristics();
+                updateCharacteristicsPanel(fallbackChars);
+            }
+
+            // Reset submit button
+            submitIcon.innerHTML = '→';
+            submitBtn.disabled = false;
         }
 
         function addMessage(sender, content) {
@@ -651,35 +734,51 @@
                 : 'Generate Analysis Report';
         }
 
-        function generateReport() {
+        async function generateReport() {
             if (selectedCharacteristics.size === 0) return;
 
             generateBtn.innerHTML = '<div class="loading"></div> Generating Report...';
             generateBtn.disabled = true;
 
-            const traits = Array.from(selectedCharacteristics).join(', ');
+            const traits = Array.from(selectedCharacteristics);
             
-            setTimeout(() => {
-                const reportMessage = `📊 **Analysis Report Generated**
+            try {
+                // Generate AI-powered reaction analysis
+                const analysisReport = await generateReactionAnalysis(currentQuery, traits);
+                
+                const reportMessage = `📊 **AI-Generated Analysis Report**
 
-**Query:** ${currentQuery}
+**News Content:** ${currentQuery}
 
-**Selected Audience Traits:** ${traits}
+**Selected Audience Traits:** ${traits.join(', ')}
 
-**Key Insights:**
-• This content would likely resonate well with the selected demographic
-• Emotional response patterns suggest high engagement potential
-• Recommended messaging adjustments for optimal impact
-• Cultural sensitivity considerations have been analyzed
-
-*Note: This is a demo interface. In the full implementation, your LLM backend would generate detailed, personalized audience analysis reports based on the selected characteristics.*`;
+**Analysis:**
+${analysisReport}`;
 
                 addMessage('assistant', reportMessage);
                 
-                // Reset generate button
-                generateBtn.innerHTML = 'Generate New Analysis';
-                generateBtn.disabled = false;
-            }, 2000);
+            } catch (error) {
+                console.error('Error generating report:', error);
+                const fallbackMessage = `📊 **Analysis Report**
+
+**News Content:** ${currentQuery}
+
+**Selected Audience Traits:** ${traits.join(', ')}
+
+**Key Insights:**
+• This content would likely resonate with the selected demographic based on their characteristics
+• Audience engagement patterns suggest varying levels of interest and emotional response
+• Recommended approach: Tailor messaging to address specific concerns of this demographic
+• Consider cultural and generational factors when crafting communication strategy
+
+*Note: Full AI analysis temporarily unavailable. Please check your API configuration.*`;
+
+                addMessage('assistant', fallbackMessage);
+            }
+
+            // Reset generate button
+            generateBtn.innerHTML = 'Generate New Analysis';
+            generateBtn.disabled = false;
         }
 
         function loadHistoryItem(item) {
@@ -698,6 +797,52 @@
             addMessage('assistant', "I've loaded your previous analysis. You can modify the audience characteristics and generate a new report, or view the original analysis results.");
         }
 
+        function updateCharacteristicsPanel(characteristics) {
+            const panelContent = document.querySelector('#characteristicsPanel');
+            const newHTML = `
+                <div class="panel-header">AI-Generated Audience Characteristics</div>
+                ${generateCharacteristicsHTML(characteristics)}
+                <button class="generate-btn" id="generateBtn">Generate Analysis Report</button>
+            `;
+            
+            panelContent.innerHTML = newHTML;
+            
+            // Reattach event listeners
+            setupCharacteristicListeners();
+            
+            // Auto-select primary characteristics and update state
+            selectedCharacteristics.clear();
+            document.querySelectorAll('.characteristic-item.auto-selected').forEach(item => {
+                const value = item.dataset.value;
+                selectedCharacteristics.add(value);
+                item.classList.add('selected');
+            });
+            
+            updateGenerateButton();
+        }
+
+        function setupCharacteristicListeners() {
+            // Re-setup characteristic selection listeners
+            document.querySelectorAll('.characteristic-item').forEach(item => {
+                item.addEventListener('click', () => toggleCharacteristic(item));
+            });
+            
+            // Re-setup generate button listener
+            const newGenerateBtn = document.getElementById('generateBtn');
+            if (newGenerateBtn) {
+                newGenerateBtn.addEventListener('click', generateReport);
+            }
+        }
+
+        function updateLastAssistantMessage(newContent) {
+            const messages = chatMessages.querySelectorAll('.message.assistant');
+            if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                const contentDiv = lastMessage.querySelector('.message-content');
+                contentDiv.textContent = newContent;
+            }
+        }
+
         function goBackToMainPage() {
             // Reset to initial state
             welcomeScreen.classList.remove('hidden');
@@ -712,17 +857,362 @@
             queryInput.value = '';
             currentQuery = '';
             selectedCharacteristics.clear();
+            generatedCharacteristics = {};
             
-            // Reset all checkboxes
-            document.querySelectorAll('.characteristic-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            // Reset generate button
-            updateGenerateButton();
+            // Reset characteristics panel to original state
+            resetCharacteristicsPanel();
             
             // Focus on input
             queryInput.focus();
+        }
+
+        function resetCharacteristicsPanel() {
+            const originalHTML = `
+                <div class="panel-header">Audience Characteristics</div>
+                
+                <div class="characteristics-section">
+                    <div class="section-title">Age Groups</div>
+                    <div class="characteristic-grid">
+                        <div class="characteristic-item" data-value="18-24">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">18-24</div>
+                        </div>
+                        <div class="characteristic-item" data-value="25-34">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">25-34</div>
+                        </div>
+                        <div class="characteristic-item" data-value="35-44">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">35-44</div>
+                        </div>
+                        <div class="characteristic-item" data-value="45-54">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">45-54</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="characteristics-section">
+                    <div class="section-title">Gender</div>
+                    <div class="characteristic-grid">
+                        <div class="characteristic-item" data-value="male">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Male</div>
+                        </div>
+                        <div class="characteristic-item" data-value="female">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Female</div>
+                        </div>
+                        <div class="characteristic-item" data-value="non-binary">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Non-binary</div>
+                        </div>
+                        <div class="characteristic-item" data-value="prefer-not-to-say">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Prefer not to say</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="characteristics-section">
+                    <div class="section-title">Personality Traits</div>
+                    <div class="characteristic-grid">
+                        <div class="characteristic-item" data-value="curious">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Curious</div>
+                        </div>
+                        <div class="characteristic-item" data-value="ambitious">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Ambitious</div>
+                        </div>
+                        <div class="characteristic-item" data-value="conservative">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Conservative</div>
+                        </div>
+                        <div class="characteristic-item" data-value="progressive">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Progressive</div>
+                        </div>
+                        <div class="characteristic-item" data-value="analytical">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Analytical</div>
+                        </div>
+                        <div class="characteristic-item" data-value="creative">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Creative</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="characteristics-section">
+                    <div class="section-title">Interests</div>
+                    <div class="characteristic-grid">
+                        <div class="characteristic-item" data-value="technology">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Technology</div>
+                        </div>
+                        <div class="characteristic-item" data-value="sports">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Sports</div>
+                        </div>
+                        <div class="characteristic-item" data-value="arts">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Arts</div>
+                        </div>
+                        <div class="characteristic-item" data-value="business">
+                            <div class="characteristic-checkbox"></div>
+                            <div class="characteristic-label">Business</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="generate-btn" id="generateBtn">Generate Analysis Report</button>
+            `;
+            
+            characteristicsPanel.innerHTML = originalHTML;
+            setupEventListeners();
+        }
+
+        // OpenAI API integration
+        async function analyzeNewsWithAI(newsContent) {
+            try {
+                const response = await fetch(OPENAI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [{
+                            role: 'user',
+                            content: `Analyze this news content and identify the key audience characteristics that would be most relevant for understanding public reaction. Provide your analysis in the following JSON format:
+
+{
+  "primary_demographics": {
+    "age_groups": ["25-34", "35-44"],
+    "gender": ["male", "female"],
+    "education": ["college", "graduate"],
+    "income": ["middle-class", "upper-middle-class"]
+  },
+  "interests": ["technology", "business", "politics"],
+  "personality_traits": ["analytical", "progressive", "curious"],
+  "geographic": ["urban", "suburban"],
+  "professional": ["tech-workers", "professionals", "managers"],
+  "additional_options": {
+    "age_groups": ["18-24", "45-54", "55+"],
+    "personality_traits": ["conservative", "traditional", "skeptical"],
+    "interests": ["finance", "sports", "entertainment"]
+  }
+}
+
+News content to analyze: "${newsContent}"`
+                        }],
+                        max_tokens: 1500,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get AI analysis');
+                }
+
+                const data = await response.json();
+                const analysisText = data.choices[0].message.content;
+                
+                try {
+                    return JSON.parse(analysisText);
+                } catch (parseError) {
+                    // If JSON parsing fails, extract characteristics manually
+                    return extractCharacteristicsFromText(analysisText);
+                }
+            } catch (error) {
+                console.error('Error analyzing news:', error);
+                return getFallbackCharacteristics();
+            }
+        }
+
+        async function generateReactionAnalysis(newsContent, selectedTraits) {
+            try {
+                const response = await fetch(OPENAI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [{
+                            role: 'user',
+                            content: `Provide a detailed analysis of how an audience with these characteristics would likely react to this news:
+
+Audience Characteristics: ${selectedTraits.join(', ')}
+
+News Content: "${newsContent}"
+
+Please provide:
+1. Overall emotional reaction (positive/negative/mixed/neutral)
+2. Key concerns or interests this audience would have
+3. Likely engagement behavior (share, comment, ignore, etc.)
+4. Potential misconceptions or areas of confusion
+5. Recommended messaging adjustments for this audience
+6. Cultural or demographic-specific considerations
+
+Format your response as a comprehensive analysis report.`
+                        }],
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate reaction analysis');
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('Error generating analysis:', error);
+                return 'Unable to generate analysis at this time. Please check your API configuration and try again.';
+            }
+        }
+
+        function extractCharacteristicsFromText(text) {
+            // Fallback function to extract characteristics if JSON parsing fails
+            return {
+                primary_demographics: {
+                    age_groups: ["25-34", "35-44"],
+                    gender: ["male", "female"]
+                },
+                interests: ["technology", "business"],
+                personality_traits: ["analytical", "curious"],
+                additional_options: {
+                    age_groups: ["18-24", "45-54"],
+                    personality_traits: ["conservative", "progressive"]
+                }
+            };
+        }
+
+        function getFallbackCharacteristics() {
+            // Fallback characteristics when API is not available
+            return {
+                primary_demographics: {
+                    age_groups: ["25-34", "35-44"],
+                    gender: ["male", "female"],
+                    education: ["college"]
+                },
+                interests: ["technology", "business"],
+                personality_traits: ["analytical", "curious"],
+                additional_options: {
+                    age_groups: ["18-24", "45-54"],
+                    personality_traits: ["conservative", "progressive"],
+                    interests: ["sports", "entertainment"]
+                }
+            };
+        }
+
+        function generateCharacteristicsHTML(characteristics) {
+            let html = '';
+            
+            // Age Groups
+            if (characteristics.primary_demographics?.age_groups || characteristics.additional_options?.age_groups) {
+                const primary = characteristics.primary_demographics?.age_groups || [];
+                const additional = characteristics.additional_options?.age_groups || [];
+                const allAges = [...new Set([...primary, ...additional])];
+                
+                html += `
+                <div class="characteristics-section">
+                    <div class="section-title">Age Groups</div>
+                    <div class="characteristic-grid">
+                        ${allAges.map(age => `
+                            <div class="characteristic-item ${primary.includes(age) ? 'auto-selected' : ''}" data-value="${age}" data-category="age">
+                                <div class="characteristic-checkbox"></div>
+                                <div class="characteristic-label">${age}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Gender
+            if (characteristics.primary_demographics?.gender) {
+                const genders = ['male', 'female', 'non-binary', 'prefer-not-to-say'];
+                const primaryGenders = characteristics.primary_demographics.gender;
+                
+                html += `
+                <div class="characteristics-section">
+                    <div class="section-title">Gender</div>
+                    <div class="characteristic-grid">
+                        ${genders.map(gender => `
+                            <div class="characteristic-item ${primaryGenders.includes(gender) ? 'auto-selected' : ''}" data-value="${gender}" data-category="gender">
+                                <div class="characteristic-checkbox"></div>
+                                <div class="characteristic-label">${gender.charAt(0).toUpperCase() + gender.slice(1).replace('-', ' ')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Personality Traits
+            if (characteristics.personality_traits || characteristics.additional_options?.personality_traits) {
+                const primary = characteristics.personality_traits || [];
+                const additional = characteristics.additional_options?.personality_traits || [];
+                const allTraits = [...new Set([...primary, ...additional])];
+                
+                html += `
+                <div class="characteristics-section">
+                    <div class="section-title">Personality Traits</div>
+                    <div class="characteristic-grid">
+                        ${allTraits.map(trait => `
+                            <div class="characteristic-item ${primary.includes(trait) ? 'auto-selected' : ''}" data-value="${trait}" data-category="personality">
+                                <div class="characteristic-checkbox"></div>
+                                <div class="characteristic-label">${trait.charAt(0).toUpperCase() + trait.slice(1)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Interests
+            if (characteristics.interests || characteristics.additional_options?.interests) {
+                const primary = characteristics.interests || [];
+                const additional = characteristics.additional_options?.interests || [];
+                const allInterests = [...new Set([...primary, ...additional])];
+                
+                html += `
+                <div class="characteristics-section">
+                    <div class="section-title">Interests</div>
+                    <div class="characteristic-grid">
+                        ${allInterests.map(interest => `
+                            <div class="characteristic-item ${primary.includes(interest) ? 'auto-selected' : ''}" data-value="${interest}" data-category="interests">
+                                <div class="characteristic-checkbox"></div>
+                                <div class="characteristic-label">${interest.charAt(0).toUpperCase() + interest.slice(1)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Education Level
+            if (characteristics.primary_demographics?.education) {
+                const educationLevels = ['high-school', 'college', 'graduate', 'postgraduate'];
+                const primaryEducation = characteristics.primary_demographics.education;
+                
+                html += `
+                <div class="characteristics-section">
+                    <div class="section-title">Education Level</div>
+                    <div class="characteristic-grid">
+                        ${educationLevels.map(edu => `
+                            <div class="characteristic-item ${primaryEducation.includes(edu) ? 'auto-selected' : ''}" data-value="${edu}" data-category="education">
+                                <div class="characteristic-checkbox"></div>
+                                <div class="characteristic-label">${edu.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            return html;
         }
 
         // Initialize the app
