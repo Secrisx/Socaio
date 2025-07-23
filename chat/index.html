@@ -41,6 +41,24 @@ FEATURES:
         }
 
 
+        /* Header Logo */
+        .header-logo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            font-size: 24px;
+            font-weight: bold;
+            color: #6366f1;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            text-decoration: none;
+        }
+
+        .header-logo:hover {
+            color: #5855eb;
+        }
+
         /* Main Content */
         .main-content {
             flex: 1;
@@ -191,6 +209,7 @@ FEATURES:
         .characteristics-panel.active {
             width: 400px;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .panel-header {
@@ -453,6 +472,7 @@ FEATURES:
     </style>
 </head>
 <body>
+    <div class="header-logo" id="headerLogo">Socaio</div>
     <div class="container">
 
         <div class="main-content" id="mainContent">            
@@ -610,6 +630,7 @@ FEATURES:
         const submitBtn = document.getElementById('submitBtn');
         const submitIcon = document.getElementById('submitIcon');
         const chatMessages = document.getElementById('chatMessages');
+        const headerLogo = document.getElementById('headerLogo');
         let generateBtn = document.getElementById('generateBtn');
         let reportDisplay = document.getElementById('reportDisplay');
         let reportContent = document.getElementById('reportContent');
@@ -628,6 +649,9 @@ FEATURES:
             queryInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleQuerySubmit();
             });
+
+            // Header logo click - go back to main page
+            headerLogo.addEventListener('click', goBackToMainPage);
 
             // Characteristic selection
             document.querySelectorAll('.characteristic-item').forEach(item => {
@@ -648,6 +672,11 @@ FEATURES:
             if (!query) return;
 
             currentQuery = query;
+            
+            // Clear previous conversations and reset state
+            chatMessages.innerHTML = '';
+            selectedCharacteristics.clear();
+            generatedCharacteristics = {};
             
             // Show loading state
             submitIcon.innerHTML = '<div class="loading"></div>';
