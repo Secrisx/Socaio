@@ -1,6 +1,6 @@
 # Socaio - AI-Powered Audience Analysis Tool
 
-Understand how your audience will react to news content with AI-powered insights. Simply enter your news content and get detailed audience analysis and reaction predictions.
+Understand how your audience will react to news content with AI-powered insights. Built with Next.js for dynamic, server-side functionality.
 
 ## ✨ What You Can Do
 
@@ -15,7 +15,7 @@ Understand how your audience will react to news content with AI-powered insights
 - **Smart Characteristic Detection**: AI automatically identifies and pre-selects the most relevant audience traits
 - **Interactive Selection**: Easily modify AI suggestions or choose your own characteristics
 - **Comprehensive Reports**: Get detailed analysis including emotional reactions, engagement patterns, and recommendations
-- **Clean Interface**: Intuitive design with easy navigation and scrollable panels
+- **Modern Tech Stack**: Built with Next.js, React, and serverless API routes
 - **Fallback Mode**: Works even when AI is temporarily unavailable
 
 ## 🚀 Getting Started
@@ -26,37 +26,45 @@ Understand how your audience will react to news content with AI-powered insights
 3. Generate a new API key
 4. Keep this key safe - you'll need it for setup
 
-### Step 2: Deploy Your Own Copy
+### Step 2: Development Setup
 
-#### Option A: GitHub Pages (Recommended)
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd socaio
 
-1. **Fork this repository** to your GitHub account
-2. **Add your API key**:
-   - Go to your forked repository settings
-   - Click "Secrets and variables" → "Actions"
-   - Create a new secret named `OPENAI_API_KEY`
-   - Paste your API key as the value
-3. **Enable GitHub Pages**:
-   - Go to Settings → Pages
-   - Source: "Deploy from a branch"
-   - Branch: `gh-pages` (created automatically)
-4. **Deploy**: Push any change to main branch - your site deploys automatically!
+# Install dependencies
+npm install
 
-#### Option B: Other Hosting Platforms
+# Create environment file
+cp .env.example .env
 
-**Netlify:**
+# Add your OpenAI API key to .env
+OPENAI_API_KEY=your_api_key_here
+
+# Start development server
+npm run dev
+```
+
+Your app will be available at `http://localhost:3000`
+
+### Step 3: Deploy to Production
+
+#### Vercel (Recommended)
+1. Import your GitHub repository to Vercel
+2. Add environment variable: `OPENAI_API_KEY` = your API key
+3. Deploy automatically with `git push`
+
+#### Netlify
 1. Connect your GitHub repository to Netlify
 2. Add environment variable: `OPENAI_API_KEY` = your API key
 3. Build command: `npm run build`
-4. Publish directory: `dist`
+4. Publish directory: `.next`
 
-**Vercel:**
-1. Import your GitHub repository to Vercel
-2. Add environment variable: `OPENAI_API_KEY` = your API key
-3. Build command: `npm run build`
-4. Output directory: `dist`
+#### Other Platforms
+Any platform supporting Next.js applications will work.
 
-### Step 3: Using the Application
+### Step 4: Using the Application
 
 1. **Enter your content**: Type or paste your news content in the input box
 2. **AI analysis**: The system automatically analyzes your content and suggests relevant audience characteristics
@@ -67,64 +75,59 @@ Understand how your audience will react to news content with AI-powered insights
 ## 💡 How to Use
 
 1. **Fresh Start**: Each new analysis automatically clears previous conversations
-2. **Scrollable Panel**: If many characteristics are generated, scroll within the right panel to access all options
-3. **Visual Feedback**: AI-selected characteristics are marked in green with an "AI" badge
-4. **Easy Navigation**: Click the logo in the top-left to return to the main page anytime
+2. **Visual Feedback**: AI-selected characteristics are marked in green with an "AI" badge
+3. **Easy Navigation**: Click the logo in the top-left to return to the main page anytime
+4. **Responsive Design**: Works seamlessly on desktop and mobile devices
 
 ## 🔧 Technical Details
 
-### How It Works Behind the Scenes
+### Tech Stack
 
-1. **Content Analysis**: Your news content is sent to OpenAI's GPT model
-2. **Smart Detection**: AI identifies relevant demographics, interests, and personality traits
-3. **Dynamic Interface**: The app automatically updates with AI-suggested characteristics
-4. **Custom Analysis**: Generate detailed reaction reports based on your selected audience traits
+- **Frontend**: Next.js 15, React 19
+- **API Routes**: Next.js serverless functions
+- **AI Integration**: OpenAI GPT-3.5-turbo
+- **Styling**: CSS-in-JS with styled-jsx
+- **Deployment**: Vercel (recommended)
 
-### Security & Privacy
-
-- ✅ **Safe Setup**: API key is injected at build time, not stored in source code
-- ✅ **Public Repository Safe**: No sensitive information in your code
-- ⚠️ **Browser Visibility**: Users with developer tools can see the API key in built files
-- 🛡️ **Recommendation**: For production apps with sensitive data, consider a backend API
-
-### What Happens If AI Is Unavailable?
-
-- **Fallback Mode**: App continues working with preset characteristics
-- **No Data Loss**: You can still generate reports using default audience segments
-- **Transparent Communication**: Clear messages when AI features are temporarily unavailable
-
-## File Structure
+### Project Structure
 
 ```
 socaio/
-├── chat/
-│   └── index.html          # Main application (template)
-├── .github/
-│   └── workflows/
-│       └── deploy.yml      # GitHub Actions deployment
-├── build.js                # Build script for API key injection
-├── package.json            # Dependencies and scripts
-├── .env                    # Local API key (not committed)
-└── README.md              # This file
+├── pages/
+│   ├── _app.js              # App wrapper
+│   ├── index.js             # Main application page
+│   └── api/
+│       ├── auto-select.js   # AI characteristic detection
+│       └── generate-report.js # Report generation
+├── styles/
+│   └── globals.css          # Global styles
+├── next.config.js           # Next.js configuration
+├── package.json             # Dependencies and scripts
+├── .env.example             # Environment variables template
+└── README.md               # This file
 ```
 
-## Development
+### How It Works Behind the Scenes
 
-### Local Server (Alternative)
-If you prefer server-side development:
+1. **Content Analysis**: Your news content is sent to OpenAI's GPT model via API routes
+2. **Smart Detection**: AI identifies relevant demographics, interests, and personality traits
+3. **Dynamic Interface**: React components update in real-time with AI suggestions
+4. **Custom Analysis**: Generate detailed reaction reports based on selected audience traits
+
+### Security & Privacy
+
+- ✅ **Server-Side Security**: API keys are stored securely on the server
+- ✅ **Environment Variables**: Sensitive data never exposed to client-side
+- ✅ **Serverless Functions**: API routes run securely on Vercel/Netlify infrastructure
+- 🛡️ **Production Ready**: Designed for secure deployment with proper environment management
+
+## 📜 Available Scripts
 
 ```bash
-npm start  # Runs Express server on localhost:3000
-```
-
-### Building for Production
-
-```bash
-# For GitHub Actions (uses environment variable)
-npm run build
-
-# For local testing (reads from .env file)
-npm run build:local
+npm run dev     # Start development server
+npm run build   # Build for production
+npm start       # Start production server
+npm run lint    # Run Next.js linter
 ```
 
 ## 🛠️ Troubleshooting
@@ -132,27 +135,23 @@ npm run build:local
 ### Common Issues & Solutions
 
 **"API key not configured" error:**
-- Double-check your environment variable is named exactly `OPENAI_API_KEY`
-- Verify the build process completed successfully
-- Make sure you're not opening the HTML file directly (use a web server)
+- Check your `.env` file contains `OPENAI_API_KEY=your_key`
+- Restart the development server after adding environment variables
+- Verify your deployment platform has the environment variable configured
 
 **No AI analysis, only fallback mode:**
 - Check your OpenAI account has available credits
 - Verify your API key is valid and not expired
-- Look in browser console for detailed error messages
+- Check browser console or server logs for detailed error messages
 
-**Interface issues:**
-- Try refreshing the page
-- Clear browser cache
-- Make sure JavaScript is enabled
-
-**Can't scroll to see all characteristics:**
-- The right panel should scroll automatically - try using mouse wheel or scrollbar
-- On mobile, use touch scrolling within the characteristics panel
+**Build or deployment issues:**
+- Ensure all dependencies are installed (`npm install`)
+- Check that Next.js version is compatible
+- Verify your deployment platform supports Next.js
 
 ### Need Help?
 
-Check your browser's developer console (F12) for detailed error messages and debugging information.
+Check your browser's developer console (F12) and server logs for detailed error messages and debugging information.
 
 ---
 
@@ -167,9 +166,9 @@ Found a bug or have an idea? Contributions are welcome!
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Test locally
+4. Test locally with `npm run dev`
 5. Submit a pull request
 
 ---
 
-**💡 Pro Tip**: This tool works great for analyzing press releases, blog posts, social media content, or any text where understanding audience reaction matters. Try it with different types of content to see how audience characteristics change!
+**💡 Pro Tip**: This tool works great for analyzing press releases, blog posts, social media content, or any text where understanding audience reaction matters. The Next.js architecture makes it fast, scalable, and easy to extend with additional features!

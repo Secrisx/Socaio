@@ -14,8 +14,6 @@ yarn-error.log*
 
 # Build output
 dist/
-.next/
-out/
 
 # IDE
 .vscode/
@@ -32,7 +30,7 @@ Thumbs.db
 logs
 *.log
 
-# Old files (converted to Next.js)
-server.js
-build.js
+# Next.js build output
+.next/
+out/
 .vercel
