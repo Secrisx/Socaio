@@ -242,9 +242,7 @@ export default function Home() {
                         >
                           <div className="characteristic-checkbox"></div>
                           <div className="characteristic-label">
-                            {item === '18-' ? 'Under 18' : 
-                             item === 'non-binary' ? 'Non-binary' :
-                             item.charAt(0).toUpperCase() + item.slice(1).replace('-', ' ')}
+                            {item.charAt(0).toUpperCase() + item.slice(1)}
                           </div>
                         </div>
                       ))}
